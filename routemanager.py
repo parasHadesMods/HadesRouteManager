@@ -104,6 +104,7 @@ def load_current_snapshot():
     HADES_SAVES_PATH / current_v_name())
 
 def save_child_snapshot():
+  global CURRENT_SNAPSHOT
   filename = prompt_filename("Enter a name for the snapshot.")
   new_snapshot = CURRENT_SNAPSHOT / filename
   new_snapshot.mkdir(exist_ok=True)
@@ -115,6 +116,8 @@ def save_child_snapshot():
   copy_file(
     HADES_SAVES_PATH / current_v_name(),
     new_snapshot / current_v_name())
+
+  CURRENT_SNAPSHOT = new_snapshot
 
 def choose_child_snapshot():
   global CURRENT_SNAPSHOT
