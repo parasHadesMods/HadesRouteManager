@@ -37,6 +37,9 @@ def current_temp_name():
 def current_v_name():
   return current_save_name().replace(".sav", ".v.sav")
 
+def current_sjson_name():
+  return current_save_name().replace(".sav", ".sjson")
+
 def copy_file(fromPath, toPath):
   toPath.write_bytes(fromPath.read_bytes())
 
@@ -84,7 +87,14 @@ def create_new_route():
 
   return new_route
 
+def force_snapshot_valid():
+  sjson_file = (HADES_SAVES_PATH / current_sjson_name())
+  old_sjson_text = sjson_file.read_text()
+  new_sjson_text = old_sjson_text.replace("  ValidCheckpoint = false\n", "")
+  sjson_file.write_text(new_sjson_text)
+
 def load_current_snapshot():
+  force_snapshot_valid()
   copy_file(
     CURRENT_SNAPSHOT / current_temp_name(),
     HADES_SAVES_PATH / current_temp_name())
@@ -115,7 +125,6 @@ def choose_child_snapshot():
 
   if not child or not child["Path"]:
     return
-  print("ok", child["Path"])
 
   CURRENT_SNAPSHOT = child["Path"]
 
@@ -155,7 +164,7 @@ if __name__ == "__main__":
   print("Hades Route Manager starting...")
   while not EXIT:
     if CURRENT_ROUTE:
-       print(f"Depth {current_depth()} {CURRENT_SNAPSHOT.name}")
+       print(f"{current_save_name()} Depth {current_depth()} {CURRENT_SNAPSHOT.name}")
        menu = [ menu_item
          for menu_item in ROUTE_MENU
          if (not "Predicate" in menu_item)
