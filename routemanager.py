@@ -94,7 +94,10 @@ def force_snapshot_valid():
   sjson_file.write_text(new_sjson_text)
 
 def load_current_snapshot():
-  force_snapshot_valid()
+  copy_file(
+    CURRENT_ROUTE / current_save_name(),
+    HADES_SAVES_PATH / current_save_name())
+
   copy_file(
     CURRENT_SNAPSHOT / current_temp_name(),
     HADES_SAVES_PATH / current_temp_name())
@@ -102,6 +105,8 @@ def load_current_snapshot():
   copy_file(
     CURRENT_SNAPSHOT / current_v_name(),
     HADES_SAVES_PATH / current_v_name())
+
+  force_snapshot_valid()
 
 def save_child_snapshot():
   global CURRENT_SNAPSHOT
@@ -121,10 +126,16 @@ def save_child_snapshot():
 
 def choose_child_snapshot():
   global CURRENT_SNAPSHOT
-  child = prompt_choice(
-    get_subdirs(CURRENT_SNAPSHOT),
-    "Choose a child snapshot:",
-    {"Text": "None of the above.", "Path": None})
+  subdirs = get_subdirs(CURRENT_SNAPSHOT)
+  child = None
+
+  if len(subdirs) == 1:
+    child = subdirs[0]
+  else:
+    child = prompt_choice(
+      subdirs,
+      "Choose a child snapshot:",
+      {"Text": "None of the above.", "Path": None})
 
   if not child or not child["Path"]:
     return
@@ -133,6 +144,9 @@ def choose_child_snapshot():
 
 def has_parent():
   return not CURRENT_SNAPSHOT.samefile(CURRENT_ROUTE)
+
+def has_child():
+  return len(get_subdirs(CURRENT_SNAPSHOT)) > 0
 
 def return_to_parent():
   global CURRENT_SNAPSHOT
@@ -153,6 +167,7 @@ ROUTE_MENU = [
   { "Text": "Save a new child.",
     "Function": save_child_snapshot },
   { "Text": "Select a child snapshot.",
+    "Predicate": has_child,
     "Function": choose_child_snapshot},
   { "Text": "Return to parent.",
     "Predicate": has_parent,
