@@ -84,6 +84,7 @@ def save_child_snapshot():
 if __name__ == "__main__":
   window = tkinter.Tk()
   window.title("Hades Route Manager")
+  window.attributes("-topmost", True)
 
   ROUTE_COMBO = Combobox(window, "Select a route",
     lambda item: routemanager.set_current_route(item["Path"]))
