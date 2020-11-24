@@ -12,10 +12,13 @@ def sorted_by(field, items):
   return sorted(items, key = lambda item: item[field])
 
 def get_subdirs(path):
-  return sorted_by("Text", [
-    {"Text": d.name, "Path": d}
-    for d in path.iterdir()
-    if d.is_dir()])
+  if not path:
+    return []
+  else:
+    return sorted_by("Text", [
+      {"Text": d.name, "Path": d}
+      for d in path.iterdir()
+      if d.is_dir()])
 
 def get_saves():
   return sorted_by("Text", [
@@ -108,9 +111,8 @@ def load_current_snapshot():
 
   force_snapshot_valid()
 
-def save_child_snapshot():
+def save_child_snapshot_as(filename):
   global CURRENT_SNAPSHOT
-  filename = prompt_filename("Enter a name for the snapshot.")
   new_snapshot = CURRENT_SNAPSHOT / filename
   new_snapshot.mkdir(exist_ok=True)
 
@@ -124,8 +126,18 @@ def save_child_snapshot():
 
   CURRENT_SNAPSHOT = new_snapshot
 
-def choose_child_snapshot():
+def save_child_snapshot():
+  filename = prompt_filename("Enter a name for the snapshot.")
+  save_child_snapshot_as(filename)
+
+def set_child_snapshot(child):
   global CURRENT_SNAPSHOT
+  if not child or not child["Path"]:
+    return
+
+  CURRENT_SNAPSHOT = child["Path"]
+
+def choose_child_snapshot():
   subdirs = get_subdirs(CURRENT_SNAPSHOT)
   child = None
 
@@ -137,24 +149,32 @@ def choose_child_snapshot():
       "Choose a child snapshot:",
       {"Text": "None of the above.", "Path": None})
 
-  if not child or not child["Path"]:
-    return
-
-  CURRENT_SNAPSHOT = child["Path"]
+  set_child_snapshot(child)
 
 def has_parent():
-  return not CURRENT_SNAPSHOT.samefile(CURRENT_ROUTE)
+  if not CURRENT_SNAPSHOT:
+    return False
+  else:
+    return not CURRENT_SNAPSHOT.samefile(CURRENT_ROUTE)
 
 def has_child():
-  return len(get_subdirs(CURRENT_SNAPSHOT)) > 0
+  if not CURRENT_SNAPSHOT:
+    return False
+  else:
+    return len(get_subdirs(CURRENT_SNAPSHOT)) > 0
 
 def return_to_parent():
   global CURRENT_SNAPSHOT
   CURRENT_SNAPSHOT = CURRENT_SNAPSHOT.parent
 
-def switch_routes():
+def set_current_route(path):
   global CURRENT_ROUTE
-  CURRENT_ROUTE = None
+  global CURRENT_SNAPSHOT
+  CURRENT_ROUTE = path
+  CURRENT_SNAPSHOT = path
+
+def switch_routes():
+  set_current_route(None)
 
 def exit_route_manager():
   global EXIT
@@ -164,32 +184,38 @@ ROUTE_MENU = [
   { "Text": "Load this snapshot.",
     "Predicate": has_parent,
     "Function": load_current_snapshot },
+  { "Text": "Return to parent.",
+    "Predicate": has_parent,
+    "Function": return_to_parent }
+]
+
+TEXT_ROUTE_MENU = ROUTE_MENU + [
   { "Text": "Save a new child.",
     "Function": save_child_snapshot },
+  { "Text": "Switch routes.",
+    "Function": switch_routes },
   { "Text": "Select a child snapshot.",
     "Predicate": has_child,
     "Function": choose_child_snapshot},
-  { "Text": "Return to parent.",
-    "Predicate": has_parent,
-    "Function": return_to_parent },
-  { "Text": "Switch routes.",
-    "Function": switch_routes },
   { "Text": "Exit.",
     "Function": exit_route_manager }
 ]
+
+def current_position_text():
+  return f"{current_save_name()} Depth {current_depth()}"
 
 if __name__ == "__main__":
   print("Hades Route Manager starting...")
   while not EXIT:
     if CURRENT_ROUTE:
-       print(f"{current_save_name()} Depth {current_depth()} {CURRENT_SNAPSHOT.name}")
-       menu = [ menu_item
-         for menu_item in ROUTE_MENU
-         if (not "Predicate" in menu_item)
-         or (menu_item["Predicate"]())]
-       chosen = prompt_choice(menu, "Choose an action:")
-       if chosen:
-         chosen["Function"]()    
+      print(current_position_text(), CURRENT_SNAPSHOT.name)
+      menu = [ menu_item
+        for menu_item in TEXT_ROUTE_MENU
+        if (not "Predicate" in menu_item)
+        or (menu_item["Predicate"]())]
+      chosen = prompt_choice(menu, "Choose an action:")
+      if chosen:
+        chosen["Function"]()
     else:
       chosen = prompt_choice(
         get_subdirs(ROUTES_PATH),
@@ -198,8 +224,7 @@ if __name__ == "__main__":
       if not chosen:
         continue
       if chosen["Path"]:
-        CURRENT_ROUTE = chosen["Path"]
+        set_current_route(chosen["Path"])
       else:
-        CURRENT_ROUTE = create_new_route()
-      CURRENT_SNAPSHOT = CURRENT_ROUTE
+        set_current_route(create_new_route())
          
