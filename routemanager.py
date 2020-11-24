@@ -76,6 +76,14 @@ def prompt_filename(prompt):
     filename = input(f"{prompt}\n > ")
   return filename
 
+def create_new_route_as(profile, filename):
+  new_route = ROUTES_PATH / filename
+  new_route.mkdir(exist_ok=True)
+
+  copy_file(profile["Path"], new_route / profile["Path"].name)
+
+  return new_route
+
 def create_new_route():
   chosen = prompt_choice(
     get_saves(),
@@ -83,12 +91,8 @@ def create_new_route():
   if not chosen:
     return None
   filename = prompt_filename("Enter a name for the route:")
-  new_route = ROUTES_PATH / filename
-  new_route.mkdir(exist_ok=True)
 
-  copy_file(chosen["Path"], new_route / chosen["Path"].name)
-
-  return new_route
+  return create_new_route_as(chosen, filename)
 
 def force_snapshot_valid():
   sjson_file = (HADES_SAVES_PATH / current_sjson_name())
