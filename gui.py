@@ -22,7 +22,7 @@ class Combobox:
     return callback
 
   def disable_option_menu_eventually(self):
-    current_state = self.option_menu.cget('state')
+    current_state = self.state()
     if current_state == tkinter.DISABLED:
       pass
     elif current_state == tkinter.NORMAL:
@@ -81,6 +81,12 @@ def save_child_snapshot():
     routemanager.save_child_snapshot_as(filename)
     refresh()
 
+GUI_ROUTE_MENU = routemanager.ROUTE_MENU + [
+  { "Text": "Save new snapshot.",
+    "Predicate": lambda: routemanager.CURRENT_ROUTE,
+    "Function": save_child_snapshot }
+]
+
 if __name__ == "__main__":
   window = tkinter.Tk()
   window.title("Hades Route Manager")
@@ -97,7 +103,7 @@ if __name__ == "__main__":
   LABEL = tkinter.Label(window)
   LABEL.pack(fill=tkinter.X)
 
-  for item in routemanager.ROUTE_MENU:
+  for item in GUI_ROUTE_MENU:
     button = tkinter.Button(window, text=item["Text"], command=callback_for(item))
     button.pack(fill=tkinter.X)
     BUTTONS.append((item, button))
@@ -105,9 +111,6 @@ if __name__ == "__main__":
   SAVE_NAME_FIELD = tkinter.StringVar()
   save_entry = tkinter.Entry(window, textvariable=SAVE_NAME_FIELD)
   save_entry.pack(fill=tkinter.X)
-
-  SAVE_NAME_BUTTON = tkinter.Button(window, text="Save new snapshot.", command=save_child_snapshot)
-  SAVE_NAME_BUTTON.pack(fill=tkinter.X)
 
   refresh()
 
