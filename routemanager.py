@@ -190,10 +190,7 @@ ROUTE_MENU = [
     "Function": load_current_snapshot },
   { "Text": "Return to parent.",
     "Predicate": has_parent,
-    "Function": return_to_parent }
-]
-
-TEXT_ROUTE_MENU = ROUTE_MENU + [
+    "Function": return_to_parent },
   { "Text": "Save a new child.",
     "Function": save_child_snapshot },
   { "Text": "Switch routes.",
