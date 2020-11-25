@@ -116,7 +116,7 @@ ELEMENTS = [
     "OnSelect": routemanager.set_child_snapshot,
     "GetOptions": lambda: routemanager.get_subdirs(routemanager.CURRENT_SNAPSHOT) },
   { "Type": "Label",
-    "GetCurrent": lambda: routemanager.current_save_name() if routemanager.CURRENT_ROUTE else ""},
+    "GetCurrent": lambda: routemanager.current_save_name() if routemanager.CURRENT_ROUTE else "No snapshot selected"},
   { "Type": "Button",
     "Text": "Load this snapshot",
     "Predicate": routemanager.has_parent,
@@ -130,16 +130,18 @@ ELEMENTS = [
     "Text": "Save new snapshot",
     "Predicate": lambda: routemanager.CURRENT_ROUTE,
     "Function": save_child_snapshot },
+  { "Type": "Entry" } ,
+  { "Type": "RowStart" },
   { "Type": "Button",
-    "Text": "Create new route",
+    "Text": "New route",
     "Predicate": lambda: CURRENT_PROFILE,
     "Function": create_new_route },
   { "Type": "Combo",
-    "Prompt": "Select slot for new route",
+    "Prompt": "Save slot",
     "GetCurrent": lambda: CURRENT_PROFILE["Path"] if CURRENT_PROFILE else None,
     "OnSelect": set_current_profile,
     "GetOptions": lambda: routemanager.get_saves() },
-  {  "Type": "Entry" } ,
+  { "Type": "RowEnd" },
 ]
 
 if __name__ == "__main__":
@@ -149,22 +151,34 @@ if __name__ == "__main__":
 
   SAVE_NAME_FIELD = tkinter.StringVar()
 
+  parent = window
   for item in ELEMENTS:
+    to_pack = None
     if item["Type"] == "Combo":
-      element = ComboItem(window, item)
-      element.option_menu.pack(fill=tkinter.X)
+      element = ComboItem(parent, item)
+      to_pack = element.option_menu
       item["Refresh"] = element.refresh
     if item["Type"] == "Button":
-      element = ButtonItem(window, item)
-      element.button.pack(fill=tkinter.X)
+      element = ButtonItem(parent, item)
+      to_pack = element.button
       item["Refresh"] = element.refresh
     if item["Type"] == "Entry":
-      entry = tkinter.Entry(window, textvariable=SAVE_NAME_FIELD)
-      entry.pack(fill=tkinter.X)
+      entry = tkinter.Entry(parent, textvariable=SAVE_NAME_FIELD)
+      to_pack = entry
     if item["Type"] == "Label":
-      label = tkinter.Label(window)
-      label.pack(fill=tkinter.X)
+      label = tkinter.Label(parent)
+      to_pack = label
       item["Refresh"] = lambda label=label,item=item: label.configure(text=item["GetCurrent"]())
+    if item["Type"] == "RowStart":
+      parent = tkinter.Frame(parent)
+      continue
+    if item["Type"] == "RowEnd":
+      to_pack = parent
+      parent = window
+    if parent == window:
+      to_pack.pack(fill=tkinter.X)
+    else:
+      to_pack.pack(side=tkinter.LEFT)
 
   refresh()
 
