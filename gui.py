@@ -74,7 +74,6 @@ class ComboItem:
 
 CURRENT_PROFILE = None
 SAVE_NAME_FIELD = None
-ELEMENTS = []
 
 def refresh():
   for elem in ELEMENTS:
