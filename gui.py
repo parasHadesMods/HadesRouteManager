@@ -100,10 +100,6 @@ def set_current_profile(profile):
   global CURRENT_PROFILE
   CURRENT_PROFILE = profile
 
-def type_button(item):
-  item["Type"] = "Button"
-  return item
-
 ELEMENTS = [
   { "Type": "Combo",
     "Prompt": "Select a route",
