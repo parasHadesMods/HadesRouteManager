@@ -86,6 +86,12 @@ def save_child_snapshot():
     SAVE_NAME_FIELD.set("")
     routemanager.save_child_snapshot_as(filename)
 
+def save_note():
+  note_text = SAVE_NAME_FIELD.get()
+  if note_text:
+    SAVE_NAME_FIELD.set("")
+    routemanager.add_note_text_to_snapshot(note_text)
+
 def create_new_route():
   filename = SAVE_NAME_FIELD.get()
   profile = CURRENT_PROFILE
@@ -126,6 +132,10 @@ ELEMENTS = [
     "Text": "Save",
     "Predicate": lambda: routemanager.CURRENT_ROUTE,
     "Function": save_child_snapshot },
+  { "Type": "Button",
+    "Text": "Note",
+    "Predicate": lambda: routemanager.CURRENT_ROUTE,
+    "Function": save_note },
   { "Type": "RowEnd" },
   { "Type": "Entry" } ,
   { "Type": "RowStart" },
@@ -139,6 +149,8 @@ ELEMENTS = [
     "OnSelect": set_current_profile,
     "GetOptions": lambda: routemanager.get_saves() },
   { "Type": "RowEnd" },
+  { "Type": "Label",
+    "GetCurrent": lambda: routemanager.current_snapshot_notes() if routemanager.CURRENT_ROUTE else "" },
 ]
 
 if __name__ == "__main__":

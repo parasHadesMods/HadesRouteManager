@@ -34,6 +34,12 @@ def current_save_name():
 def current_depth():
   return len(CURRENT_SNAPSHOT.relative_to(CURRENT_ROUTE).parts) + 1
 
+def current_snapshot_notes():
+  try:
+    return (CURRENT_SNAPSHOT / "notes.txt").read_text()
+  except FileNotFoundError:
+    return ""
+
 def current_temp_name():
   return current_save_name().replace(".sav", "_Temp.sav")
 
@@ -75,6 +81,9 @@ def prompt_filename(prompt):
   while not re.search(r'[\w\d\-\. ]+', filename):
     filename = input(f"{prompt}\n > ")
   return filename
+
+def prompt_note(prompt):
+  return input(f"{prompt}\n > ")
 
 def create_new_route_as(profile, filename):
   new_route = ROUTES_PATH / filename
@@ -133,6 +142,21 @@ def save_child_snapshot_as(filename):
 def save_child_snapshot():
   filename = prompt_filename("Enter a name for the snapshot.")
   save_child_snapshot_as(filename)
+
+
+def add_note_text_to_snapshot(note_text):
+  note_file = CURRENT_SNAPSHOT / "notes.txt"
+  old_text = ""
+  try:
+    old_text = note_file.read_text() + "\n"
+  except FileNotFoundError:
+    pass
+
+  note_file.write_text(old_text + note_text)
+
+def add_note_to_snapshot():
+  note = prompt_note("Enter an note.")
+  add_note_text_to_snapshot(note)
 
 def set_child_snapshot(child):
   global CURRENT_SNAPSHOT
@@ -193,6 +217,8 @@ ROUTE_MENU = [
     "Function": return_to_parent },
   { "Text": "Save a new child.",
     "Function": save_child_snapshot },
+  { "Text": "Add a note.",
+    "Function": add_note_to_snapshot },
   { "Text": "Switch routes.",
     "Function": switch_routes },
   { "Text": "Select a child snapshot.",
@@ -210,8 +236,9 @@ if __name__ == "__main__":
   while not EXIT:
     if CURRENT_ROUTE:
       print(current_position_text(), CURRENT_SNAPSHOT.name)
+      print(current_snapshot_notes())
       menu = [ menu_item
-        for menu_item in TEXT_ROUTE_MENU
+        for menu_item in ROUTE_MENU
         if (not "Predicate" in menu_item)
         or (menu_item["Predicate"]())]
       chosen = prompt_choice(menu, "Choose an action:")
