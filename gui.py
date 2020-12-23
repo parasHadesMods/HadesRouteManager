@@ -161,6 +161,9 @@ if __name__ == "__main__":
   SAVE_NAME_FIELD = tkinter.StringVar()
 
   parent = window
+  row = 0
+  column = 0
+  window.grid_columnconfigure(0, weight=1)
   for item in ELEMENTS:
     to_pack = None
     if item["Type"] == "Combo":
@@ -180,14 +183,18 @@ if __name__ == "__main__":
       item["Refresh"] = lambda label=label,item=item: label.configure(text=item["GetCurrent"]())
     if item["Type"] == "RowStart":
       parent = tkinter.Frame(parent)
+      column = 0
       continue
     if item["Type"] == "RowEnd":
       to_pack = parent
       parent = window
     if parent == window:
-      to_pack.pack(fill=tkinter.X)
+      to_pack.grid(row=row, column=0, sticky="news")
+      row += 1
     else:
-      to_pack.pack(side=tkinter.LEFT)
+      to_pack.grid(row=0, column=column, sticky="news")
+      parent.grid_columnconfigure(column, weight=1, uniform="group1")
+      column += 1
 
   refresh()
 
